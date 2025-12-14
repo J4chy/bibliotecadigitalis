@@ -34,6 +34,10 @@
             transform: translateY(-4px);
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
         }
+        /* Garantisce che il body abbia colore anche senza Tailwind caricato */
+        body {
+            background-color: #fffaf0; 
+        }
     </style>
 
     <!-- Implementazione Dublin Core (DC) in <head> -->
@@ -75,6 +79,8 @@
     <!-- Contenitore per il contenuto dinamico delle pagine -->
     <main id="content-area" class="flex-grow">
         <!-- Contenuto delle Pagine Verrà Inserito Qui Tramite JS -->
+        <!-- Aggiunto un semplice Placeholder HTML di fallback in caso di errore JS -->
+        <div class="p-16 text-center text-xl text-stone-500">Caricamento in corso...</div>
     </main>
 
     <!-- Visualizzatore Modale (Tool Integrativo) - Componente 2 -->
@@ -377,7 +383,10 @@
                 </div>
             `;
             // Attiva il primo tab di default
-            document.querySelector('[data-tab="descrizione"]').classList.add('border-wood', 'text-wood');
+            const firstTab = document.querySelector('[data-tab="descrizione"]');
+            if (firstTab) {
+                showTab(firstTab, 'descrizione');
+            }
         }
 
         // Pagina Web Project Plan (project_plan.html)
@@ -483,17 +492,13 @@
         }
 
 
-        // Inizializzazione
-        window.addEventListener('hashchange', handleHashChange);
-        window.addEventListener('load', () => {
-             // Inizializza il tab
-            const firstTab = document.querySelector('.tab-btn');
-            if(firstTab) {
-                showTab(firstTab, 'descrizione');
-            }
-
-            // Inizializza la pagina corretta in base all'hash o alla home
-            handleHashChange();
+        // INIZIALIZZAZIONE CORRETTA E PIÙ ROBUSTA
+        // Chiamiamo handleHashChange immediatamente appena lo script è pronto
+        // Questo garantisce che il contenuto venga disegnato anche se il window.load è in ritardo
+        document.addEventListener('DOMContentLoaded', () => {
+             handleHashChange();
+             // Assicurati che l'ascoltatore di hashchange sia impostato solo una volta
+             window.addEventListener('hashchange', handleHashChange);
         });
         
     </script>
