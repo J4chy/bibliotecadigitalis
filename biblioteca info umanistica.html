@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bibliotheca Digitalis | Collezione di Testi Rari</title>
+    <!-- Caricamento di Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Configurazione Tailwind: Definiamo i nostri font personalizzati
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'serif': ['Merriweather', 'Georgia', 'serif'],
+                        'sans': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'paper': '#fffaf0', // Colore carta antica
+                        'wood': '#3e3e3e',   // Colore legno scuro
+                        'accent': '#a27d3d', // Colore ottone/oro
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* CSS Personalizzato */
+        .book-card {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease-in-out;
+        }
+        .book-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+
+    <!-- Implementazione Dublin Core (DC) in <head> -->
+    <meta name="DC.Title" content="Bibliotheca Digitalis: Collezione di Testi Rari">
+    <meta name="DC.Creator" content="Gemini Project">
+    <meta name="DC.Subject" content="Letteratura classica; Testi rari; Digitalizzazione; Umanesimo">
+    <meta name="DC.Description" content="Piattaforma digitale per la consultazione di manoscritti e libri antichi.">
+    <meta name="DC.Date" content="2024-11-12">
+    <meta name="DC.Type" content="Text">
+    <meta name="DC.Format" content="text/html">
+    <meta name="DC.Language" content="it">
+    <meta name="DC.Rights" content="Dominio Pubblico">
+</head>
+<body class="bg-paper font-sans text-stone-800 antialiased min-h-screen flex flex-col">
+
+    <!-- Header (Menù principale e Metanavigazione) - Componente 1 -->
+    <header class="bg-wood text-white shadow-xl sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <h1 class="text-3xl font-serif font-bold tracking-wider">
+                <a href="#home" class="text-accent hover:text-white transition duration-300">Bibliotheca Digitalis</a>
+            </h1>
+            <nav class="space-x-4 flex items-center">
+                <!-- Navigazione Primaria -->
+                <a href="#home" class="nav-link hidden md:block text-white hover:text-accent transition duration-300">Home</a>
+                <a href="#collezione" class="nav-link hidden md:block text-white hover:text-accent transition duration-300">Collezione</a>
+                <a href="#about" class="nav-link hidden md:block text-white hover:text-accent transition duration-300">Chi Siamo</a>
+                <!-- Metanavigazione -->
+                <a href="#wpp" class="nav-link text-xs md:text-sm px-3 py-1 bg-accent/20 rounded-full hover:bg-accent/40 transition duration-300 text-accent border border-accent">
+                    Web Project Plan
+                </a>
+                <!-- Mobile Menu Button (Componente Dropdown simulato) -->
+                <button id="mobile-menu-btn" class="md:hidden text-white focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Contenitore per il contenuto dinamico delle pagine -->
+    <main id="content-area" class="flex-grow">
+        <!-- Contenuto delle Pagine Verrà Inserito Qui Tramite JS -->
+    </main>
+
+    <!-- Visualizzatore Modale (Tool Integrativo) - Componente 2 -->
+    <div id="viewer-modal" class="fixed inset-0 bg-black bg-opacity-90 z-[100] hidden justify-center items-center p-4" onclick="closeViewer()">
+        <div class="bg-paper rounded-lg shadow-2xl w-full h-full max-w-6xl max-h-[90vh] flex flex-col" onclick="event.stopPropagation()">
+            
+            <div class="flex justify-between items-center p-3 md:p-4 bg-wood rounded-t-lg">
+                <h4 id="viewer-title" class="text-xl font-serif font-bold text-accent truncate">Visualizzazione Documento</h4>
+                <button onclick="closeViewer()" class="text-white hover:text-red-400 transition duration-300 p-2 rounded-full hover:bg-stone-700 focus:outline-none" title="Chiudi Visualizzatore">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <div class="flex-grow">
+                <!-- L'iFrame carica la risorsa del libro -->
+                <iframe id="viewer-iframe" src="" frameborder="0" class="w-full h-full rounded-b-lg"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-wood text-white py-8 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p>&copy; 2024 Bibliotheca Digitalis - Progetto Accademico.</p>
+        </div>
+    </footer>
+
+
+    <script>
+        // Dati Mockup per la Collezione
+        const books = [
+            {
+                id: 'item_01',
+                title: "La Divina Commedia: Inferno",
+                author: "Dante Alighieri",
+                date: "1320",
+                subject: ["Poesia", "Teologia", "Viaggio"],
+                description: "La prima cantica dell'opera monumentale di Dante, che descrive il viaggio attraverso i nove cerchi dell'Inferno. Edizione storica del 1898.",
+                publisher: "Hoepli, Milano (ristampa)",
+                format: "PDF",
+                relation: "Edizione Critica",
+                source: "https://www.gutenberg.org/files/20853/20853-pdf.pdf",
+                cover: "https://placehold.co/400x600/3e3e3e/fff?text=DANTE%0AInferno"
+            },
+            {
+                id: 'item_02',
+                title: "De Re Publica, Somnium Scipionis",
+                author: "Cicerone",
+                date: "1823",
+                subject: ["Filosofia", "Politica", "Latino"],
+                description: "Un estratto dal De Re Publica di Cicerone, un classico della filosofia politica romana. Testo in latino con note a margine.",
+                publisher: "Project Gutenberg Source",
+                format: "PDF",
+                relation: "Testo Originale",
+                source: "https://www.gutenberg.org/files/14988/14988-pdf.pdf", 
+                cover: "https://placehold.co/400x600/6f3a34/fff?text=Cicerone%0A+De+Re+Publica"
+            },
+            {
+                id: 'item_03',
+                title: "I Promessi Sposi",
+                author: "Alessandro Manzoni",
+                date: "1840",
+                subject: ["Romanzo Storico", "Letteratura Italiana"],
+                description: "Una delle opere fondamentali della letteratura italiana, ambientata nel Seicento in Lombardia.",
+                publisher: "Feltrinelli (Mock-up)",
+                format: "HTML",
+                relation: "Edizione Integrale",
+                source: "https://www.gutenberg.org/files/57814/57814-h/57814-h.htm",
+                cover: "https://placehold.co/400x600/1e406f/fff?text=Manzoni%0A+Sposi"
+            },
+        ];
+        
+        // Riferimenti agli elementi DOM
+        const contentArea = document.getElementById('content-area');
+        const viewerModal = document.getElementById('viewer-modal');
+        const viewerIframe = document.getElementById('viewer-iframe');
+        const viewerTitle = document.getElementById('viewer-title');
+        
+        // Funzione per generare il Breadcrumb (Servizio di Browsing 1)
+        function generateBreadcrumbs(page, itemTitle = '') {
+            let breadcrumbHTML = '<nav class="flex px-4 py-3 text-stone-700 bg-stone-100 rounded-lg shadow-sm font-sans" aria-label="Breadcrumb">';
+            breadcrumbHTML += '<ol class="inline-flex items-center space-x-1 md:space-x-3">';
+            
+            // Home
+            breadcrumbHTML += '<li class="inline-flex items-center"><a href="#home" class="text-sm font-medium text-wood hover:text-accent inline-flex items-center">Home</a></li>';
+
+            if (page === 'collezione') {
+                breadcrumbHTML += `<li><div class="flex items-center"><svg class="w-3 h-3 text-gray-400 mx-1" fill="currentColor" viewBox="0 0 20 20"><path d="M7 13l3-3 3 3H7z" clip-rule="evenodd" fill-rule="evenodd"></path></svg><a href="#collezione" class="text-sm font-medium text-stone-500">Collezione</a></div></li>`;
+            } else if (page === 'item' && itemTitle) {
+                breadcrumbHTML += `<li><div class="flex items-center"><svg class="w-3 h-3 text-gray-400 mx-1" fill="currentColor" viewBox="0 0 20 20"><path d="M7 13l3-3 3 3H7z" clip-rule="evenodd" fill-rule="evenodd"></path></svg><a href="#collezione" class="text-sm font-medium text-wood hover:text-accent">Collezione</a></div></li>`;
+                breadcrumbHTML += `<li aria-current="page"><div class="flex items-center"><svg class="w-3 h-3 text-gray-400 mx-1" fill="currentColor" viewBox="0 0 20 20"><path d="M7 13l3-3 3 3H7z" clip-rule="evenodd" fill-rule="evenodd"></path></svg><span class="text-sm font-medium text-stone-500 truncate max-w-[150px] md:max-w-xs">${itemTitle}</span></div></li>`;
+            } else if (page === 'wpp') {
+                breadcrumbHTML += `<li aria-current="page"><div class="flex items-center"><svg class="w-3 h-3 text-gray-400 mx-1" fill="currentColor" viewBox="0 0 20 20"><path d="M7 13l3-3 3 3H7z" clip-rule="evenodd" fill-rule="evenodd"></path></svg><span class="text-sm font-medium text-stone-500">Web Project Plan</span></div></li>`;
+            }
+            
+            breadcrumbHTML += '</ol></nav>';
+            return breadcrumbHTML;
+        }
+
+        // --- GESTIONE DELLE PAGINE SIMULATE ---
+
+        // Pagina Home (index.html)
+        function renderHome() {
+            const breadcrumbs = generateBreadcrumbs('home');
+            contentArea.innerHTML = `
+                ${breadcrumbs}
+                <section class="bg-wood text-white py-16 md:py-24 text-center shadow-inner">
+                    <div class="max-w-4xl mx-auto px-4">
+                        <h2 class="text-5xl md:text-7xl font-serif font-bold mb-4 text-accent">
+                            Bibliotheca Digitalis
+                        </h2>
+                        <p class="text-xl md:text-2xl text-stone-300 mb-8">
+                            Collezione storica di manoscritti e libri antichi.
+                        </p>
+                        <a href="#collezione" class="inline-block px-8 py-3 bg-accent text-white text-lg font-semibold rounded-full shadow-xl hover:bg-accent/80 transition duration-300 transform hover:scale-105">
+                            Sfoglia il Catalogo
+                        </a>
+                    </div>
+                </section>
+                <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+                    <h3 class="text-4xl font-serif font-semibold text-center mb-10">La Nostra Missione</h3>
+                    <div class="grid md:grid-cols-3 gap-8 text-lg">
+                        <!-- Card Componente 3 -->
+                        <div class="bg-white p-6 rounded-xl book-card border border-stone-200">
+                            <h4 class="font-bold text-accent mb-3 text-xl">Custodia</h4>
+                            <p>Preserviamo le opere più fragili del passato, garantendo la loro accessibilità digitale.</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl book-card border border-stone-200">
+                            <h4 class="font-bold text-accent mb-3 text-xl">Digitalizzazione</h4>
+                            <p>Trasferiamo digitalmente i nostri manoscritti, rendendo le fonti accessibili globalmente.</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl book-card border border-stone-200">
+                            <h4 class="font-bold text-accent mb-3 text-xl">Ricerca</h4>
+                            <p>Offriamo strumenti e risorse per l'analisi e lo studio approfondito dei nostri fondi.</p>
+                        </div>
+                    </div>
+                </section>
+            `;
+        }
+
+        // Pagina Collezione (collezione.html)
+        function renderCollezione() {
+            const breadcrumbs = generateBreadcrumbs('collezione');
+
+            // Implementazione Servizio di Browsing 2: Indice Alfabetico (Tags)
+            const allSubjects = books.flatMap(book => book.subject);
+            const uniqueSubjects = [...new Set(allSubjects)].sort();
+            
+            const filterTags = uniqueSubjects.map(tag => 
+                `<button data-filter="${tag.toLowerCase().replace(/\s/g, '-')}" class="tag-filter px-3 py-1 text-sm bg-stone-200 text-stone-700 rounded-full hover:bg-accent hover:text-white transition duration-200 mr-2 mb-2">${tag}</button>`
+            ).join('');
+
+            const bookCards = books.map(book => `
+                <a href="#item_${book.id.split('_')[1]}" class="book-card bg-white p-4 rounded-xl border border-stone-200 flex flex-col items-center text-center data-tags="${book.subject.map(s => s.toLowerCase().replace(/\s/g, '-')).join(' ')}">
+                    <div class="relative overflow-hidden rounded-lg shadow-md mb-4 w-2/3 h-56 md:h-64">
+                        <img src="${book.cover}" alt="Copertina di ${book.title}" class="w-full h-full object-cover transition duration-500 hover:scale-105">
+                    </div>
+                    <h4 class="text-lg font-serif font-bold text-stone-900 truncate" title="${book.title}">${book.title}</h4>
+                    <p class="text-sm text-accent font-semibold">${book.author}</p>
+                    <p class="text-xs text-stone-500 mt-1">(${book.date})</p>
+                </a>
+            `).join('');
+
+            contentArea.innerHTML = `
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+                    ${breadcrumbs}
+                    <h3 class="text-4xl font-serif font-semibold mt-6 mb-8 text-wood">Collezione Completa</h3>
+
+                    <div class="mb-6">
+                        <h4 class="text-xl font-serif font-semibold mb-3">Filtra per Etichette (Subject DC)</h4>
+                        <div id="filter-container">
+                            ${filterTags}
+                            <button id="reset-filter" class="px-3 py-1 text-sm bg-red-100 text-red-700 rounded-full hover:bg-red-200 transition duration-200 mr-2 mb-2">Mostra Tutto</button>
+                        </div>
+                    </div>
+
+                    <div id="book-list" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
+                        ${bookCards}
+                    </div>
+
+                    <!-- Paginazione (Servizio di Browsing 3) - Componente 4 -->
+                    <nav class="flex justify-center mt-10" aria-label="Pagination">
+                        <ul class="inline-flex items-center -space-x-px">
+                            <li><a href="#" class="py-2 px-3 ml-0 leading-tight text-stone-500 bg-white rounded-l-lg border border-stone-300 hover:bg-stone-100">Precedente</a></li>
+                            <li><a href="#" class="py-2 px-3 text-accent bg-stone-100 border border-stone-300">1</a></li>
+                            <li><a href="#" class="py-2 px-3 leading-tight text-stone-500 bg-white border border-stone-300 hover:bg-stone-100">2</a></li>
+                            <li><a href="#" class="py-2 px-3 leading-tight text-stone-500 bg-white rounded-r-lg border border-stone-300 hover:bg-stone-100">Successiva</a></li>
+                        </ul>
+                    </nav>
+
+                </div>
+            `;
+            // Aggiunge logica per il filtro (simulato)
+            document.querySelectorAll('.tag-filter').forEach(button => {
+                button.addEventListener('click', (e) => filterBooks(e.target.getAttribute('data-filter')));
+            });
+            document.getElementById('reset-filter').addEventListener('click', () => filterBooks(null));
+        }
+
+        function filterBooks(tag) {
+            const allCards = document.querySelectorAll('.book-card');
+            allCards.forEach(card => {
+                const tags = card.getAttribute('data-tags');
+                if (!tag || tags.includes(tag)) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        }
+
+        // Pagina Item (item_01.html)
+        function renderItem(itemId) {
+            const book = books.find(b => b.id === itemId);
+            if (!book) {
+                contentArea.innerHTML = `<div class="p-8 text-center text-xl">Libro non trovato.</div>`;
+                return;
+            }
+
+            const breadcrumbs = generateBreadcrumbs('item', book.title);
+
+            // Costruisce la sezione dei Metadati DC (seconda serializzazione)
+            const metadata = [
+                { key: 'Title', value: book.title, label: 'Titolo (DC.Title)' },
+                { key: 'Creator', value: book.author, label: 'Autore (DC.Creator)' },
+                { key: 'Date', value: book.date, label: 'Data (DC.Date)' },
+                { key: 'Publisher', value: book.publisher, label: 'Editore (DC.Publisher)' },
+                { key: 'Subject', value: book.subject.join(', '), label: 'Soggetto/Tag (DC.Subject)' },
+                { key: 'Description', value: book.description, label: 'Descrizione (DC.Description)' },
+                { key: 'Format', value: book.format, label: 'Formato (DC.Format)' },
+                { key: 'Relation', value: book.relation, label: 'Relazione (DC.Relation)' },
+                { key: 'Identifier', value: book.source, label: 'Identificatore (DC.Identifier)' },
+            ];
+
+            const tabsHTML = `
+                <div class="mt-4">
+                    <div class="border-b border-stone-200">
+                        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                            <!-- Tabs Componente 5 -->
+                            <button onclick="showTab(this, 'descrizione')" class="tab-btn whitespace-nowrap py-3 px-1 border-b-2 border-transparent font-medium text-sm md:text-base text-stone-500 hover:text-wood hover:border-wood focus:outline-none" aria-current="page" data-tab="descrizione">Descrizione</button>
+                            <button onclick="showTab(this, 'metadati')" class="tab-btn whitespace-nowrap py-3 px-1 border-b-2 border-transparent font-medium text-sm md:text-base text-stone-500 hover:text-wood hover:border-wood focus:outline-none" data-tab="metadati">Metadati DC</button>
+                            <button onclick="showTab(this, 'risorsa')" class="tab-btn whitespace-nowrap py-3 px-1 border-b-2 border-transparent font-medium text-sm md:text-base text-stone-500 hover:text-wood hover:border-wood focus:outline-none" data-tab="risorsa">Accesso</button>
+                        </nav>
+                    </div>
+
+                    <!-- Contenuto Tab: Descrizione -->
+                    <div id="tab-descrizione" class="tab-content pt-4 text-lg">
+                        <p>${book.description}</p>
+                        <p class="mt-4 text-sm text-stone-500">
+                            *Le etichette in questa sezione riflettono i campi DC serializzati in formato leggibile nel body del documento.
+                        </p>
+                    </div>
+
+                    <!-- Contenuto Tab: Metadati DC -->
+                    <div id="tab-metadati" class="tab-content hidden pt-4">
+                        <dl class="divide-y divide-stone-200">
+                            ${metadata.map(meta => `
+                                <div class="py-3 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 items-center">
+                                    <dt class="text-sm font-medium text-wood">${meta.label}</dt>
+                                    <dd class="mt-1 text-sm text-stone-900 sm:mt-0 sm:col-span-2 flex justify-between items-center">
+                                        <span class="truncate" id="meta-${meta.key}">${meta.value}</span>
+                                        <button onclick="copyToClipboard('${meta.key}', '${meta.value.replace(/'/g, "\\'")}')" class="ml-4 p-1 rounded-full text-stone-500 hover:text-accent focus:outline-none" title="Copia Valore">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-2m-4-4l-4 4-4-4m8-6h-2"></path></svg>
+                                        </button>
+                                    </dd>
+                                </div>
+                            `).join('')}
+                        </dl>
+                        <p id="copy-message" class="mt-4 text-xs text-green-600 hidden">Valore copiato!</p>
+                    </div>
+
+                    <!-- Contenuto Tab: Accesso Risorsa -->
+                    <div id="tab-risorsa" class="tab-content hidden pt-4 text-center">
+                        <button onclick="openViewer('${book.source}', '${book.title}')" class="px-8 py-3 bg-accent text-white text-lg font-semibold rounded-full shadow-lg hover:bg-accent/80 transition duration-300 transform hover:scale-105">
+                            Apri Visualizzatore
+                        </button>
+                        <p class="mt-4 text-sm text-stone-500">
+                            La risorsa sarà caricata in un iFrame senza lasciare la pagina.
+                        </p>
+                    </div>
+                </div>
+            `;
+
+            contentArea.innerHTML = `
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+                    ${breadcrumbs}
+                    <div class="mt-8 grid md:grid-cols-3 gap-8">
+                        <!-- Colonna 1: Immagine -->
+                        <div class="md:col-span-1 flex flex-col items-center">
+                            <img src="${book.cover}" alt="Copertina di ${book.title}" class="rounded-lg shadow-xl w-full max-w-xs md:max-w-none border-2 border-stone-100">
+                        </div>
+                        
+                        <!-- Colonna 2: Dettagli e Tabs -->
+                        <div class="md:col-span-2">
+                            <h2 class="text-4xl font-serif font-bold text-wood">${book.title}</h2>
+                            <p class="text-xl text-accent mb-4">${book.author}</p>
+                            ${tabsHTML}
+                        </div>
+                    </div>
+                </div>
+            `;
+            // Attiva il primo tab di default
+            document.querySelector('[data-tab="descrizione"]').classList.add('border-wood', 'text-wood');
+        }
+
+        // Pagina Web Project Plan (project_plan.html)
+        function renderWPP() {
+            const breadcrumbs = generateBreadcrumbs('wpp');
+            // Carica il contenuto dal file markdown WPP generato precedentemente (simulato)
+            const wppContent = `
+                ${breadcrumbs}
+                <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+                    <h2 class="text-4xl font-serif font-bold text-wood mb-6">Web Project Plan (WPP)</h2>
+                    <p class="text-lg mb-6">Questa sezione simula l'inclusione del documento di progetto in formato web, come richiesto in meta-navigazione.</p>
+                    
+                    <h3 class="text-3xl font-serif font-semibold text-accent mt-8 mb-4">1. Idea (Abstract)</h3>
+                    <p>Il progetto "Bibliotheca Digitalis" mira a creare un'interfaccia elegante e accessibile per una collezione digitale di volumi storici rari. La collezione è gestita attraverso metadati Dublin Core per garantirne la ricercabilità.</p>
+                    
+                    <h3 class="text-3xl font-serif font-semibold text-accent mt-8 mb-4">4. Struttura e Categorie (DC)</h3>
+                    <p>La struttura gerarchica del sito è simulata tramite navigazione in hash. Le categorie di descrizione degli item sono basate sul Dublin Core. Di seguito, un esempio di formalizzazione:</p>
+                    
+                    <div class="bg-stone-100 p-4 rounded-lg mt-4">
+                        <ul class="list-disc list-inside">
+                            <li>**DC.Title:** Titolo dell'opera.</li>
+                            <li>**DC.Creator:** Autore (Navigazione Alfabetica).</li>
+                            <li>**DC.Subject:** Argomento/Parole chiave (Filtri per Tags).</li>
+                            <li>**DC.Date:** Data di pubblicazione (Browsing Cronologico).</li>
+                            <li>... (vedi documento completo)</li>
+                        </ul>
+                    </div>
+                    
+                    <h3 class="text-3xl font-serif font-semibold text-accent mt-8 mb-4">6. Usabilità e Layout</h3>
+                    <p>Il layout è completamente responsivo (mobile-first) basato su Tailwind. Sono stati adottati colori ad alto contrasto (legno scuro su carta chiara) per garantire l'accessibilità.</p>
+
+                    <h3 class="text-3xl font-serif font-semibold text-accent mt-8 mb-4">7. Servizi e Tool</h3>
+                    <p>I servizi di browsing e il tool integrativo sono i seguenti:</p>
+                    <ul class="list-disc list-inside bg-stone-100 p-4 rounded-lg mt-4">
+                        <li>**Servizio Browsing 1:** Breadcrumbs (Filo di Arianna)</li>
+                        <li>**Servizio Browsing 2:** Indice Alfabetico / Filtro per Tags (in Collezione)</li>
+                        <li>**Servizio Browsing 3:** Tabs per Metadati (in Pagina Item)</li>
+                        <li>**Tool Integrativo:** Visualizzatore Modale (Viewer)</li>
+                        <li>**Componente Tool Aggiuntivo:** Funzione 'Copia Metadato'</li>
+                    </ul>
+
+                    <p class="mt-8 text-center text-stone-600 italic">Per il documento completo e i wireframes, fare riferimento al file *Web Project Plan - Bibliotheca Digitalis*.</p>
+                </div>
+            `;
+            contentArea.innerHTML = wppContent;
+        }
+
+        // Funzione per la gestione della navigazione in hash
+        function handleHashChange() {
+            const hash = window.location.hash.substring(1) || 'home';
+            const [page, id] = hash.split('_');
+
+            if (page === 'home') {
+                renderHome();
+            } else if (page === 'collezione') {
+                renderCollezione();
+            } else if (page === 'item' && id) {
+                renderItem(`item_${id}`);
+            } else if (page === 'wpp') {
+                renderWPP();
+            } else {
+                renderHome(); // Fallback
+            }
+            window.scrollTo(0, 0); // Torna in cima
+        }
+        
+        // Funzione per aprire il Visualizzatore Modale
+        function openViewer(sourceUrl, title) {
+            viewerIframe.src = sourceUrl;
+            viewerTitle.textContent = title;
+            viewerModal.classList.remove('hidden');
+            viewerModal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Funzione per chiudere il Visualizzatore Modale
+        function closeViewer() {
+            viewerModal.classList.add('hidden');
+            viewerModal.classList.remove('flex');
+            viewerIframe.src = ""; // Stop playback/loading
+            document.body.style.overflow = '';
+        }
+
+        // Funzione per la gestione dei Tabs
+        function showTab(button, tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('border-wood', 'text-wood'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+
+            button.classList.add('border-wood', 'text-wood');
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+        }
+
+        // Funzione Tool Integrativo Aggiuntivo: Copia negli Appunti
+        function copyToClipboard(key, value) {
+            navigator.clipboard.writeText(value).then(() => {
+                const message = document.getElementById('copy-message');
+                message.textContent = `Valore '${key}' copiato negli appunti!`;
+                message.classList.remove('hidden');
+                setTimeout(() => message.classList.add('hidden'), 2000);
+            }).catch(err => {
+                console.error('Errore durante la copia:', err);
+            });
+        }
+
+
+        // Inizializzazione
+        window.addEventListener('hashchange', handleHashChange);
+        window.addEventListener('load', () => {
+             // Inizializza il tab
+            const firstTab = document.querySelector('.tab-btn');
+            if(firstTab) {
+                showTab(firstTab, 'descrizione');
+            }
+
+            // Inizializza la pagina corretta in base all'hash o alla home
+            handleHashChange();
+        });
+        
+    </script>
+
+</body>
+</html>
